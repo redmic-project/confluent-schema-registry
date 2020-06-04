@@ -1,0 +1,41 @@
+version: '3.5'
+
+services:
+  schema-registry:
+    image: ${IMAGE_NAME:-confluentinc/cp-schema-registry}:${IMAGE_TAG:-latest}
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zk-1:${ZK_PORT},zk-2:${ZK_PORT},zk-3:${ZK_PORT}
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:${SR_PORT}
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: ${LOG_LEVEL}
+      SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS:
+      SCHEMA_REGISTRY_HOST_NAME:
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS:
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN:
+      SCHEMA_REGISTRY_AVRO_COMPATIBILITY_LEVEL:
+    networks:
+      kafka-net:
+    volumes:
+      - secrets-vol:/etc/schema-registry/secrets
+    healthcheck:
+      test: curl -X GET http://localhost:${SR_PORT}/subjects
+      interval: ${HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-30s}
+      retries: ${HEALTHCHECK_RETRIES:-3}
+      start_period: ${HEALTHCHECK_START_PERIOD:-2m}
+    deploy:
+      mode: replicated
+      replicas: ${REPLICAS:-1}
+      restart_policy:
+        delay: ${RESTART_DELAY:-30s}
+      update_config:
+        delay: ${UPDATE_DELAY:-2m}
+
+networks:
+  kafka-net:
+    name: ${KAFKA_NET_NAME:-kafka-net}
+    driver: ${KAFKA_NET_DRIVER:-overlay}
+    external: true
+
+volumes:
+  secrets-vol:
+    name: ${SCHEMA_REGISTRY_SECRETS_VOL_NAME:-schema-registry-secrets-vol}
