@@ -1,0 +1,14 @@
+version: '3.5'
+
+services:
+  schema-registry:
+    environment:
+      SCHEMA_REGISTRY_HEAP_OPTS: -Xmx512m
+    deploy:
+      resources:
+        limits:
+          cpus: '${RESOURCES_LIMITS_CPUS:-0.5}'
+          memory: ${RESOURCES_LIMITS_MEMORY:-1G}
+        reservations:
+          cpus: '${RESOURCES_RESERVATIONS_CPUS:-0.001}'
+          memory: ${RESOURCES_RESERVATIONS_MEMORY:-820M}
